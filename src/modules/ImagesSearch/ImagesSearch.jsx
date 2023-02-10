@@ -80,7 +80,7 @@ const ImagesSearch = () => {
         </button>
       )}
       {showModal && (
-        <Modal close={closeModal}>
+        <Modal closeModal={closeModal}>
           <LargeImage {...imageDetails} />
         </Modal>
       )}
