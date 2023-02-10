@@ -1,6 +1,6 @@
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import ImagesSearchForm from './ImagesSearchForm/ImagesSearchForm';
 import ImagesList from './ImagesList/ImagesList';
@@ -28,6 +28,7 @@ const ImagesSearch = () => {
           setLoading(true);
           const data = await searchImages(search, page);
           const { hits, totalHits } = data;
+          setTotalHits(totalHits);
           if (hits.length <= 0) {
             Notify.warning(
               'Sorry, there are no images matching your search query. Please try again.'
@@ -35,7 +36,7 @@ const ImagesSearch = () => {
             return;
           }
           Notify.success(`Hooray! We found ${totalHits} images.`);
-          setItems(prevItems => ({ ...prevItems, ...hits, totalHits }));
+          setItems(prevItems => [...prevItems, ...hits]);
         } catch (error) {
           setError(error.message);
         } finally {
@@ -46,15 +47,29 @@ const ImagesSearch = () => {
     }
   }, [search, page]);
 
-  const searchImages = ({ search }) => {
+  const onSearchImages = useCallback(({ search }) => {
     setSearch(search);
     setItems([]);
     setPage(1);
-  };
+  }, []);
+
+  const showImage = useCallback(data => {
+    setImageDetails(data);
+    setShowModal(true);
+  }, []);
+
+  const loadMore = useCallback(() => {
+    setPage(prevPage => prevPage + 1);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setShowModal(false);
+    setImageDetails(null);
+  }, []);
 
   return (
     <>
-      <ImagesSearchForm onSubmit={searchImages} />
+      <ImagesSearchForm onSubmit={onSearchImages} />
 
       <ImagesList items={items} showImage={showImage} />
       {error && <p>{error.message}</p>}
@@ -73,97 +88,3 @@ const ImagesSearch = () => {
   );
 };
 export default ImagesSearch;
-
-// class ImagesSearch extends Component {
-//   state = {
-//     search: '',
-//     items: [],
-//     loading: false,
-//     error: null,
-//     page: 1,
-//     totalHits: 0,
-//     showModal: false,
-//     imageDetails: null,
-//   };
-
-//   componentDidUpdate(prevProps, prevState) {
-//     const { search, page } = this.state;
-//     if (prevState.search !== search || prevState.page !== page) {
-//       this.fetchImages();
-//     }
-//   }
-//   async fetchImages() {
-//     try {
-//       this.setState({ loading: true });
-//       const { search, page } = this.state;
-//       const data = await searchImages(search, page);
-//       const { hits, totalHits } = data;
-//       if (hits.length <= 0) {
-//         Notify.warning(
-//           'Sorry, there are no images matching your search query. Please try again.'
-//         );
-//         return;
-//       }
-//       Notify.success(`Hooray! We found ${totalHits} images.`);
-//       this.setState(({ items }) => ({
-//         items: [...items, ...hits],
-//         totalHits,
-//       }));
-//     } catch (error) {
-//       this.setState({ error: error.message });
-//     } finally {
-//       this.setState({ loading: false });
-//     }
-//   }
-
-//   searchImages = ({ search }) => {
-//     this.setState({ search, items: [], page: 1 });
-//   };
-
-//   loadMore = () => {
-//     this.setState(({ page }) => ({ page: page + 1 }));
-//   };
-
-//   showImage = ({ largeImageURL, tags }) => {
-//     this.setState({
-//       imageDetails: {
-//         largeImageURL,
-//         tags,
-//       },
-//       showModal: true,
-//     });
-//   };
-
-//   closeModal = () => {
-//     this.setState({
-//       showModal: false,
-//       imageDetails: null,
-//     });
-//   };
-
-//   render() {
-// const { items, loading, error, showModal, imageDetails, totalHits } =
-//   this.state;
-// const { searchImages, loadMore, showImage, closeModal } = this;
-
-// return (
-//   <>
-//     <ImagesSearchForm onSubmit={searchImages} />
-
-//     <ImagesList items={items} showImage={showImage} />
-//     {error && <p>{error.message}</p>}
-//     {loading && <Loader />}
-//     {items.length > 0 && items.length < totalHits && (
-//       <button className={styles.button} onClick={loadMore}>
-//         Load more
-//       </button>
-//     )}
-//     {showModal && (
-//       <Modal close={closeModal}>
-//         <LargeImage {...imageDetails} />
-//       </Modal>
-//     )}
-//   </>
-// );
-//   }
-// }

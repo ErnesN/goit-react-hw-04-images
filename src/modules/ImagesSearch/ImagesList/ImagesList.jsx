@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import ImageGalleryItem from './ImageItems/ImageGalleryItem';
 import PropTypes from 'prop-types';
 import styles from './images-list.module.scss';
@@ -10,7 +11,7 @@ const ImagesSearchList = ({ items, showImage }) => {
   );
 };
 
-export default ImagesSearchList;
+export default memo(ImagesSearchList);
 
 ImagesSearchList.deaultProps = {
   items: [],
